@@ -170,7 +170,24 @@ void day7()
 
 void day9()
 {
+    using namespace intcode;
+    auto program = IntcodeProgram::parseFromFile("./inputs/input_9.txt");
+    program.print_output = false;
+    auto copy = program;
+
+    program.input_queue.emplace(1);
+    // std::cout << program.dissassemble();
+    program.execute_all();
+
+    auto part1_ok = program.output.back() == 3546494377;
     
+    copy.input_queue.emplace(2);
+    copy.execute_all();
+    auto part2_ok = copy.output.back()  == 47253;
+
+    if (part1_ok && part2_ok)
+        std::cout << "day9 ok (part1 + part2)";
+
 }
 
 
@@ -179,6 +196,16 @@ int main(int argc, char** argv)
     day2();
     day5();
     day7();
+    day9();
+
+    //day11();
+    //day13();
+    //day15();
+    //day17();
+    //day19();
+    //day21();
+    //day23();
+    //day25();
     return 0;
 }
 

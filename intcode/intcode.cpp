@@ -61,7 +61,7 @@ void intcode::IntcodeProgram::execute_next()
 
 void intcode::IntcodeProgram::execute_out(int64_t instruction)
 {
-    auto op1 = get_operand(instruction, 1);
+    auto op1 = read_operand(instruction, 1);
     this->output.push_back(op1);
 
     if (this->print_output)
@@ -74,7 +74,9 @@ void intcode::IntcodeProgram::execute_out(int64_t instruction)
 
 void intcode::IntcodeProgram::execute_in(int64_t instruction)
 {
-    auto op1 = program[pc + 1];
+    // DAY9: In write addr can be position or relative mode
+    // auto op1 = get_operand(instruction, 1);
+    // auto op1 = program[pc + 1];
  
     int64_t num = -1; 
 
@@ -92,7 +94,9 @@ void intcode::IntcodeProgram::execute_in(int64_t instruction)
         }
 
         std::cout << std::endl;
-        write_memory(op1, num);
+        // write_memory(op1, num);
+        write_operand(instruction, num, 1);
+
         pc += 2;
         return;
     } 
@@ -103,7 +107,8 @@ void intcode::IntcodeProgram::execute_in(int64_t instruction)
         num = this->input_queue.front();
         this->input_queue.pop();
         
-        write_memory(op1, num);
+        // write_memory(op1, num);
+        write_operand(instruction, num, 1);
         pc += 2;
         return;
     }
@@ -123,22 +128,25 @@ bool intcode::IntcodeProgram::is_waiting_for_input()
 
 void intcode::IntcodeProgram::execute_comparison(int64_t instruction, comparison comp)
 {
-    auto op1 = get_operand(instruction, 1);
-    auto op2 = get_operand(instruction, 2);
-    auto op3 = program[pc + 3];
-    
-    write_memory(op3, comp(op1, op2));
+    auto op1 = read_operand(instruction, 1);
+    auto op2 = read_operand(instruction, 2);
+
+    // Day 9: Write addr can be POSITION or RELATIVE
+    // auto op3 = program[pc + 3];
+    // write_memory(op3, comp(op1, op2));
+
+    write_operand(instruction, comp(op1, op2), 3);
 
     pc += 4;
 }
 
 void intcode::IntcodeProgram::execute_jump_if_true(int64_t instruction)
 {
-    auto op1 = get_operand(instruction, 1);
+    auto op1 = read_operand(instruction, 1);
 
     if (op1 != 0)
     {
-        pc = get_operand(instruction, 2);
+        pc = read_operand(instruction, 2);
     } 
     else 
     {
@@ -148,11 +156,11 @@ void intcode::IntcodeProgram::execute_jump_if_true(int64_t instruction)
 
 void intcode::IntcodeProgram::execute_jump_if_false(int64_t instruction)
 {
-    auto op1 = get_operand(instruction, 1);
+    auto op1 = read_operand(instruction, 1);
 
     if (op1 == 0)
     {
-        pc = get_operand(instruction, 2);
+        pc = read_operand(instruction, 2);
     }
     else 
     {
@@ -162,8 +170,9 @@ void intcode::IntcodeProgram::execute_jump_if_false(int64_t instruction)
 
 void intcode::IntcodeProgram::execute_relative(int64_t instruction)
 {
-    int64_t op1 = get_operand(instruction, 1);
+    int64_t op1 = read_operand(instruction, 1);
     this->relative_base += op1;
+    this->pc += 2;
 }
 
 void intcode::IntcodeProgram::write_memory(int64_t address, int64_t value)
@@ -183,7 +192,6 @@ int64_t intcode::IntcodeProgram::read_memory(int64_t address)
     // Memory beyond the initial program starts with the value 0
     if (static_cast<size_t>(address) >= program.size()) 
     {
-        std::cout << "reading extended memory" << std::endl;
         bool found = (extended_memory.find(address) != extended_memory.end());
         if (found) 
         {
@@ -194,44 +202,77 @@ int64_t intcode::IntcodeProgram::read_memory(int64_t address)
             return 0;
         }
     }
-
-    // Memory in program data
-    return program[address];
+    else 
+    {
+        // Memory in program data
+        return program[address];
+    }
 }
 
 void intcode::IntcodeProgram::execute_bin_op(int64_t instruction, binary_op operation)
 {
-    auto op1 = get_operand(instruction, 1);
-    auto op2 = get_operand(instruction, 2);
-    auto op3 = program[pc + 3];
+    auto op1 = read_operand(instruction, 1);
+    auto op2 = read_operand(instruction, 2);
+    
+    
+    // auto op3 = program[pc + 3];
+    // this->write_memory(op3, operation(op1, op2));
+    
+    write_operand(instruction, operation(op1, op2), 3);
 
-    this->write_memory(op3, operation(op1, op2));
+
     pc += 4;
 }
 
-int64_t intcode::IntcodeProgram::get_operand(int64_t instruction, int64_t opIdx)
+int64_t intcode::IntcodeProgram::read_operand(int64_t instruction, int64_t opIdx)
 {
     auto mode = get_mode(instruction, opIdx);
+
+    int64_t op_addr = pc + opIdx;
+    int64_t op_value;
 
     switch (mode)
     {
         case Mode::IMMEDIATE:
-        return program[pc + opIdx];
+        return read_memory(op_addr);
+        // return program[pc + opIdx];
         break;
 
         case Mode::POSITION:
-        return program[program[pc + opIdx]];
+        op_value = read_memory(op_addr);
+        return read_memory(op_value);
+        // return program[program[pc + opIdx]];
         break;
         
         case Mode::RELATIVE:
-        std::cout << "RELATIVE operand" << std::endl;
-        return program[program[pc + opIdx + relative_base]];
+        op_value = read_memory(op_addr);
+        return read_memory(op_value + relative_base);
+
+        // ???
         break;
     }
 
 
     std::cerr << "Invalid operand found!" << std::endl;
     return -1;
+}
+
+void intcode::IntcodeProgram::write_operand(int64_t instruction, int64_t value, int64_t opIdx)
+{
+    auto mode = get_mode(instruction, opIdx);
+
+    if (mode == Mode::POSITION)
+    {
+        write_memory(program[pc + opIdx], value);
+    }
+    else if (mode == Mode::RELATIVE)
+    {
+        write_memory(program[pc + opIdx] + relative_base, value);
+    }
+    else 
+    {
+        std::cerr << "Invalid write operand mode" << std::endl;
+    }
 }
 
 bool intcode::IntcodeProgram::halted()
@@ -242,6 +283,78 @@ bool intcode::IntcodeProgram::halted()
     if (op == Opcode::HALT) return true;
 
     return false;
+}
+
+std::string intcode::IntcodeProgram::dissassemble()
+{
+
+    std::stringstream ss;
+
+    int64_t dpc = 0;
+
+    while (static_cast<size_t>(dpc) < program.size())
+    {
+        auto instruction = program[dpc];
+        auto opcode = get_opcode(instruction);
+        ss << opcode_str(opcode);
+        ss << " ";        
+
+        switch(opcode)
+        {
+            case Opcode::ADD:
+            case Opcode::MULT:
+            case Opcode::EQUALS:
+            case Opcode::LESS_THAN:
+            ss << dissassemble_operand(dpc, instruction, 1);
+            ss << " ";
+            ss << dissassemble_operand(dpc, instruction, 2);
+            ss << " ";
+            ss << dissassemble_operand(dpc, instruction, 3);
+            ss << " ";
+            
+
+            dpc += 4;
+            break;
+
+            case Opcode::JUMP_IF_FALSE:
+            case Opcode::JUMP_IF_TRUE:
+            ss << dissassemble_operand(dpc, instruction, 1);
+            ss << " ";
+            ss << dissassemble_operand(dpc, instruction, 2);
+            ss << " ";
+            dpc += 3;
+            break;
+
+            case Opcode::OUTPUT:
+            case Opcode::INPUT:
+            case Opcode::RELATIVE:
+            ss << dissassemble_operand(dpc, instruction, 1);
+            ss << " ";
+
+            dpc += 2;
+            break;
+
+            default: // HALT
+            dpc ++;
+            break;
+        }
+
+        ss << std::endl;
+    }
+
+    return ss.str();
+}
+
+std::string intcode::IntcodeProgram::dissassemble_operand(int64_t dpc, int64_t instruction, int64_t opIdx)
+{
+    std::stringstream ss;
+
+    auto mode = get_mode(instruction, opIdx);
+
+    ss << mode_str(mode);
+    ss << read_memory(dpc + opIdx);
+
+    return ss.str();
 }
 
 intcode::StopState intcode::IntcodeProgram::sync_execute()

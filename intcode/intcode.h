@@ -67,6 +67,16 @@ namespace intcode
         }
     }
 
+    inline std::string mode_str(Mode m)
+    {
+        switch(m)
+        {
+            case Mode::IMMEDIATE: return "";
+            case Mode::POSITION: return "@";
+            case Mode::RELATIVE: return "R";
+        }
+    }
+
    
     inline Opcode get_opcode(int64_t instruction)
     {
@@ -130,11 +140,18 @@ namespace intcode
 
         int64_t read_memory(int64_t address);
 
-        int64_t get_operand(int64_t instruction, int64_t opIdx);
+        int64_t read_operand(int64_t instruction, int64_t opIdx);
+
+        void write_operand(int64_t instruction, int64_t value, int64_t opIdx);
+
 
         bool is_waiting_for_input();
 
         bool halted();
+
+        std::string dissassemble();
+
+        std::string dissassemble_operand(int64_t dpc, int64_t instruction, int64_t opIdx);
 
         void execute_next();
 
