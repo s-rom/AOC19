@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fmt/core.h>
 #include <algorithm>
+#include <cstdint>
 
 #include "intcode/intcode.h"
 #include "util/util.h"
@@ -19,8 +20,8 @@ void day2()
     
     prog.execute_all();
 
-    int part1_sol = prog.program[0];
-    int part2_sol = -1;
+    int64_t part1_sol = prog.program[0];
+    auto part2_sol = -1;
 
     for (int noun = 0; noun <= 99; noun++)
     {
@@ -48,7 +49,7 @@ void day2()
     }
     else 
     {
-        std::cout << "Day2 ok" << std::endl;
+        std::cout << "Day2 ok (part1 + part2)" << std::endl;
     }
 
 }
@@ -70,15 +71,15 @@ void day5()
     auto part2_sol = original.output.back();
 
     if (part1_sol == 16225258 && part2_sol == 2808771)
-        std::cout << "Day5 ok" << std::endl;
+        std::cout << "Day5 ok (part1 + part2)" << std::endl;
     else 
         std::cerr << "Day5 failed" << std::endl;
 }
 
 
-int amplifier_chain(intcode::IntcodeProgram& program, int max_amplifiers, std::vector<int>& phases, int start_intput = 0)
+int64_t amplifier_chain(intcode::IntcodeProgram& program, int max_amplifiers, std::vector<int>& phases, int start_intput = 0)
 {
-    int last_output = 0;
+    auto last_output = 0LL;
     for (int i = 0; i < max_amplifiers; i++)
     {
         auto prog = program;
@@ -92,7 +93,7 @@ int amplifier_chain(intcode::IntcodeProgram& program, int max_amplifiers, std::v
     return last_output;
 }
 
-int amplifier_feedback_loop(intcode::IntcodeProgram& program, int max_amplifiers, const std::vector<int>& phases)
+int64_t amplifier_feedback_loop(intcode::IntcodeProgram& program, int max_amplifiers, const std::vector<int>& phases)
 {
 
     using namespace intcode;
@@ -105,7 +106,7 @@ int amplifier_feedback_loop(intcode::IntcodeProgram& program, int max_amplifiers
     }
 
 
-    int last_output = 0;
+    int64_t last_output = 0;
 
     while (!controllers.back().halted())
     {
@@ -131,27 +132,38 @@ void day7()
 
     int amplifiers = 5;
     int max_phase = 4;
-    int max = -1;
+    int64_t max_part1 = -1;
     
-    max = -1;
+
+    std::vector<int> v{0,1,2,3,4};
+
+    do 
+    {
+        int64_t out = amplifier_chain(prog, amplifiers, v);
+        if (out > max_part1)
+            max_part1 = out;
+    }
+    while(std::next_permutation(v.begin(), v.end()));   
+
+    int64_t max_part2 = -1;
     std::vector<int> v2 {5,6,7,8,9};
     std::vector<int> maxV;
 
     do 
     {
-        int out = amplifier_feedback_loop(prog, amplifiers, v2);
-        if (out > max)
+        int64_t out = amplifier_feedback_loop(prog, amplifiers, v2);
+        if (out > max_part2)
         {
-            max = out;
+            max_part2 = out;
             maxV = v2;
         }
     } 
     while (std::next_permutation(v2.begin(), v2.end()));
 
-    AOC19::print_vector(maxV);
-    int part2_sol = max;
-    std::cout << part2_sol  << std::endl;
+    auto part2_sol = max_part2;
 
+    if (part2_sol == 19384820 && max_part1 == 17790)
+        std::cout << "day7 ok (part1 + part2)"  << std::endl;
 
 }
 
@@ -164,7 +176,9 @@ void day9()
 
 int main(int argc, char** argv)
 {
-    day9();
+    day2();
+    day5();
+    day7();
     return 0;
 }
 

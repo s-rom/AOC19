@@ -37,11 +37,11 @@ void intcode::IntcodeProgram::execute_next()
         break;
 
         case Opcode::EQUALS:
-        execute_comparison(instruction, [](int a, int b) -> int { return a == b? 1 : 0; });
+        execute_comparison(instruction, [](int64_t a, int64_t b) -> int64_t { return a == b? 1 : 0; });
         break;
 
         case Opcode::LESS_THAN:
-        execute_comparison(instruction, [](int a, int b) -> int { return a < b? 1 : 0; });
+        execute_comparison(instruction, [](int64_t a, int64_t b) -> int64_t { return a < b? 1 : 0; });
         break;
 
         case Opcode::OUTPUT:
@@ -49,17 +49,17 @@ void intcode::IntcodeProgram::execute_next()
         break;
 
         case Opcode::ADD:
-        execute_bin_op(instruction, [](int a, int b) -> int {return a + b;});
+        execute_bin_op(instruction, [](int64_t a, int64_t b) -> int64_t {return a + b;});
         break;
 
         case Opcode::MULT:        
-        execute_bin_op(instruction, [](int a, int b) -> int {return a * b;});
+        execute_bin_op(instruction, [](int64_t a, int64_t b) -> int64_t {return a * b;});
         break;
     }
 
 }
 
-void intcode::IntcodeProgram::execute_out(int instruction)
+void intcode::IntcodeProgram::execute_out(int64_t instruction)
 {
     auto op1 = get_operand(instruction, 1);
     this->output.push_back(op1);
@@ -72,11 +72,11 @@ void intcode::IntcodeProgram::execute_out(int instruction)
     pc += 2;
 }
 
-void intcode::IntcodeProgram::execute_in(int instruction)
+void intcode::IntcodeProgram::execute_in(int64_t instruction)
 {
     auto op1 = program[pc + 1];
  
-    int num = -1; 
+    int64_t num = -1; 
 
     // No input in queue and user prompt enabled
     if (this->input_queue.size() == 0 && prompt_user_input)
@@ -92,7 +92,7 @@ void intcode::IntcodeProgram::execute_in(int instruction)
         }
 
         std::cout << std::endl;
-        write_memory(program[op1], num);
+        write_memory(op1, num);
         pc += 2;
         return;
     } 
@@ -103,7 +103,7 @@ void intcode::IntcodeProgram::execute_in(int instruction)
         num = this->input_queue.front();
         this->input_queue.pop();
         
-        write_memory(program[op1], num);
+        write_memory(op1, num);
         pc += 2;
         return;
     }
@@ -112,30 +112,27 @@ void intcode::IntcodeProgram::execute_in(int instruction)
 
 }
 
-
 bool intcode::IntcodeProgram::is_waiting_for_input()
 {
 
-    if (pc >= program.size()) return true;
+    if (static_cast<size_t>(pc) >= program.size()) return true;
 
     auto opcode = get_opcode(program[pc]);
     return opcode == Opcode::INPUT && input_queue.size() == 0 && !prompt_user_input;
 }
 
-
-
-void intcode::IntcodeProgram::execute_comparison(int instruction, comparison comp)
+void intcode::IntcodeProgram::execute_comparison(int64_t instruction, comparison comp)
 {
     auto op1 = get_operand(instruction, 1);
     auto op2 = get_operand(instruction, 2);
     auto op3 = program[pc + 3];
     
-    write_memory(program[op3], comp(op1, op2));
+    write_memory(op3, comp(op1, op2));
 
     pc += 4;
 }
 
-void intcode::IntcodeProgram::execute_jump_if_true(int instruction)
+void intcode::IntcodeProgram::execute_jump_if_true(int64_t instruction)
 {
     auto op1 = get_operand(instruction, 1);
 
@@ -149,7 +146,7 @@ void intcode::IntcodeProgram::execute_jump_if_true(int instruction)
     }
 }
 
-void intcode::IntcodeProgram::execute_jump_if_false(int instruction)
+void intcode::IntcodeProgram::execute_jump_if_false(int64_t instruction)
 {
     auto op1 = get_operand(instruction, 1);
 
@@ -163,15 +160,15 @@ void intcode::IntcodeProgram::execute_jump_if_false(int instruction)
     }
 }
 
-void intcode::IntcodeProgram::execute_relative(int instruction)
+void intcode::IntcodeProgram::execute_relative(int64_t instruction)
 {
-    int op1 = get_operand(instruction, 1);
+    int64_t op1 = get_operand(instruction, 1);
     this->relative_base += op1;
 }
 
-void intcode::IntcodeProgram::write_memory(int address, int value)
+void intcode::IntcodeProgram::write_memory(int64_t address, int64_t value)
 {
-    if (address >= program.size())
+    if (static_cast<size_t>(address) >= program.size())
     {
         extended_memory[address] = value;
     }
@@ -181,11 +178,12 @@ void intcode::IntcodeProgram::write_memory(int address, int value)
     }
 }
 
-int intcode::IntcodeProgram::read_memory(int address)
+int64_t intcode::IntcodeProgram::read_memory(int64_t address)
 {
     // Memory beyond the initial program starts with the value 0
-    if (address >= program.size()) 
+    if (static_cast<size_t>(address) >= program.size()) 
     {
+        std::cout << "reading extended memory" << std::endl;
         bool found = (extended_memory.find(address) != extended_memory.end());
         if (found) 
         {
@@ -201,17 +199,17 @@ int intcode::IntcodeProgram::read_memory(int address)
     return program[address];
 }
 
-void intcode::IntcodeProgram::execute_bin_op(int instruction, binary_op operation)
+void intcode::IntcodeProgram::execute_bin_op(int64_t instruction, binary_op operation)
 {
     auto op1 = get_operand(instruction, 1);
     auto op2 = get_operand(instruction, 2);
     auto op3 = program[pc + 3];
 
-    this->write_memory(program[op3], operation(op1, op2));
+    this->write_memory(op3, operation(op1, op2));
     pc += 4;
 }
 
-int intcode::IntcodeProgram::get_operand(int instruction, int opIdx)
+int64_t intcode::IntcodeProgram::get_operand(int64_t instruction, int64_t opIdx)
 {
     auto mode = get_mode(instruction, opIdx);
 
@@ -226,23 +224,25 @@ int intcode::IntcodeProgram::get_operand(int instruction, int opIdx)
         break;
         
         case Mode::RELATIVE:
+        std::cout << "RELATIVE operand" << std::endl;
         return program[program[pc + opIdx + relative_base]];
         break;
     }
-}
 
+
+    std::cerr << "Invalid operand found!" << std::endl;
+    return -1;
+}
 
 bool intcode::IntcodeProgram::halted()
 {
-    if (pc >= this->program.size()) return true;
+    if (static_cast<size_t>(pc) >= this->program.size()) return true;
 
     auto op = get_opcode(program[pc]);
     if (op == Opcode::HALT) return true;
 
     return false;
-
 }
-
 
 intcode::StopState intcode::IntcodeProgram::sync_execute()
 {
@@ -262,9 +262,9 @@ intcode::StopState intcode::IntcodeProgram::sync_execute()
         }
     }
 
+
     return StopState::HALTED;
 }
-
 
 void intcode::IntcodeProgram::execute_all()
 {
@@ -275,7 +275,6 @@ void intcode::IntcodeProgram::execute_all()
         execute_next();
     }
 }
-
 
 intcode::IntcodeProgram intcode::IntcodeProgram::parseFromFile(std::string inputFile)
 {
@@ -297,7 +296,7 @@ intcode::IntcodeProgram intcode::IntcodeProgram::parseFromFile(std::string input
     std::stringstream ss(line);
     std::string token;
     while (std::getline(ss, token, ',')) {
-        program.program.push_back(std::atoi(token.c_str()));
+        program.program.push_back(std::atoll(token.c_str()));
     }
 
     return program;

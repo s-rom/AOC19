@@ -68,17 +68,17 @@ namespace intcode
     }
 
    
-    inline Opcode get_opcode(int instruction)
+    inline Opcode get_opcode(int64_t instruction)
     {
         return static_cast<Opcode>(instruction % 100); 
     }
 
-    inline Mode get_mode(int instruction, int operand_number)
+    inline Mode get_mode(int64_t instruction, int64_t operand_number)
     {
         auto i = instruction / 100;
 
-        int mode = 0;
-        for (int l = 1; l <= operand_number; l++)
+        int64_t mode = 0;
+        for (int64_t l = 1; l <= operand_number; l++)
         {
             mode = i % 10;
             i = i / 10;
@@ -89,18 +89,18 @@ namespace intcode
 
     struct IntcodeProgram
     {
-        using binary_op = std::function<int(int,int)>;
-        using comparison = std::function<int(int,int)>;
+        using binary_op = std::function<int64_t(int64_t,int64_t)>;
+        using comparison = std::function<int64_t(int64_t,int64_t)>;
 
         static IntcodeProgram parseFromFile(std::string inputFile);
 
-        std::vector<int> program;
+        std::vector<int64_t> program;
         
-        std::vector<int> output;
+        std::vector<int64_t> output;
 
-        std::queue<int> input_queue;
+        std::queue<int64_t> input_queue;
 
-        std::unordered_map<int, int> extended_memory;
+        std::unordered_map<int64_t, int64_t> extended_memory;
 
         bool print_output = true;
 
@@ -108,29 +108,29 @@ namespace intcode
 
         bool prompt_user_input = false;
 
-        int pc = 0;
+        int64_t pc = 0;
 
-        int relative_base = 0;
+        int64_t relative_base = 0;
 
-        void execute_bin_op(int instruction, binary_op operation);
+        void execute_bin_op(int64_t instruction, binary_op operation);
 
-        void execute_out(int instruction);
+        void execute_out(int64_t instruction);
         
-        void execute_in(int instruction);    
+        void execute_in(int64_t instruction);    
 
-        void execute_comparison(int instruction, comparison comp);
+        void execute_comparison(int64_t instruction, comparison comp);
 
-        void execute_jump_if_true(int instruction);
+        void execute_jump_if_true(int64_t instruction);
 
-        void execute_jump_if_false(int instruction);
+        void execute_jump_if_false(int64_t instruction);
         
-        void execute_relative(int instruction);
+        void execute_relative(int64_t instruction);
 
-        void write_memory(int address, int value);
+        void write_memory(int64_t address, int64_t value);
 
-        int read_memory(int address);
+        int64_t read_memory(int64_t address);
 
-        int get_operand(int instruction, int opIdx);
+        int64_t get_operand(int64_t instruction, int64_t opIdx);
 
         bool is_waiting_for_input();
 
