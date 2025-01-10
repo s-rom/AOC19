@@ -110,12 +110,16 @@ namespace intcode
 
         std::queue<int64_t> input_queue;
 
+        // Stores addresses bigger than the program size
         std::unordered_map<int64_t, int64_t> extended_memory;
 
+
+        // Should send output to stdout
         bool print_output = true;
 
         bool debug_mode = false;
 
+        // If input queue is empty, will prompt stdin instead
         bool prompt_user_input = false;
 
         int64_t pc = 0;
@@ -142,8 +146,11 @@ namespace intcode
 
         int64_t read_operand(int64_t instruction, int64_t opIdx);
 
+        /* 
+            Used for instructions that write to memory
+            Do NOT use write_memory() directly
+        */
         void write_operand(int64_t instruction, int64_t value, int64_t opIdx);
-
 
         bool is_waiting_for_input();
 
@@ -155,8 +162,22 @@ namespace intcode
 
         void execute_next();
 
+        /*
+            Execute until a stop condition is met:
+            - Output executed 
+            - Input queue is empty
+            - Halted
+
+            ==> Does not reset program counter
+
+        */
         StopState sync_execute();
 
+        /*
+            Execute until HALT
+
+            ==> Does not reset program memory
+        */
         void execute_all();
     };
 

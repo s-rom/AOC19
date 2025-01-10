@@ -137,6 +137,7 @@
     <ClInclude Include="day1\day1.h" />
     <ClInclude Include="intcode\intcode.h" />
     <ClInclude Include="util\util.h" />
+    <ClInclude Include="util\vec.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

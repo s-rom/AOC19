@@ -4,9 +4,11 @@
 #include <fmt/core.h>
 #include <algorithm>
 #include <cstdint>
+#include <array>
 
 #include "intcode/intcode.h"
 #include "util/util.h"
+#include "util/vec.h"
 
 void day2()
 {
@@ -186,7 +188,113 @@ void day9()
     auto part2_ok = copy.output.back()  == 47253;
 
     if (part1_ok && part2_ok)
-        std::cout << "day9 ok (part1 + part2)";
+        std::cout << "day9 ok (part1 + part2)" << std::endl;
+
+}
+
+
+void day11()
+{
+    using ivec = AOC19::GridVector<int>;
+
+    using namespace intcode;
+    using namespace AOC19;
+
+    auto program = IntcodeProgram::parseFromFile("./inputs/input_11.txt");
+    program.print_output = false;
+
+    //std::unordered_set<ivec> visited;
+
+    std::unordered_map<ivec, int, GridVectorHash<int>> visited;
+
+    ivec pos {30, 100};
+    ivec dir = direction(Direction::UP);
+
+    visited[pos] = 1;
+
+    
+    while (!program.halted())
+    {
+        int input;
+
+
+        // If current position is not visited, color is black
+        if (visited.find(pos) != visited.end())
+        {
+            input = visited[pos];
+        }
+        else
+        {
+            input = 0; // black
+        }
+
+        program.input_queue.emplace(input);
+
+        program.sync_execute();
+        program.sync_execute();
+
+        auto color = program.output[program.output.size() - 2];
+        auto right_left = program.output[program.output.size() - 1];
+        
+        visited[pos] = color;
+
+        if (right_left == 0) // turn left
+        {
+            dir = get_rotated_90_left(dir);
+        }
+        else
+        {
+            dir = get_rotated_90_right(dir);
+        }
+
+        pos += dir;
+    }
+
+    std::cout << visited.size() << std::endl;
+
+    int min_row = 10000;
+    int min_col = 10000;
+    int max_row = 0;
+    int max_col = 0;
+
+    for (auto& element: visited)
+    {
+        auto pos = element.first;
+        if (pos.column > max_col) max_col = pos.column;
+        if (pos.row > max_row) max_row = pos.row;
+        
+        if (pos.column < min_col) min_col = pos.column;
+        if (pos.row < min_row) min_row = pos.row;
+    }
+
+    auto width = max_col - min_col;
+    auto height = max_row - min_row;
+
+    std::cout << "width: " << width << std::endl;
+    std::cout << "height: " << height << std::endl;
+
+    std::array<std::array<char, 100>, 200> grid;
+    
+    for (auto& row: grid)
+    {
+        row.fill('.');
+    }
+
+    for (auto& element: visited)
+    {
+        auto pos = element.first;
+        grid[pos.row][pos.column] = element.second == 0? '.' : '#';
+    }
+
+    for (auto& row: grid)
+    {
+        for (auto& col: row)
+        {
+            std::cout << col << " ";
+        }
+        std::cout << std::endl;
+    }
+
 
 }
 
@@ -197,8 +305,8 @@ int main(int argc, char** argv)
     day5();
     day7();
     day9();
+    day11();
 
-    //day11();
     //day13();
     //day15();
     //day17();
