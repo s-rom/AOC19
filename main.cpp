@@ -298,14 +298,30 @@ void day11()
 
 }
 
+void day13()
+{
+    
+}
+
 
 int main(int argc, char** argv)
 {
-    day2();
-    day5();
-    day7();
-    day9();
-    day11();
+    // day2();
+    // day5();
+    // day7();
+    // day9();
+
+    std::vector<int> v{1, 2, 3};
+
+    std::vector<int> v2 = std::move(v);
+
+
+    AOC19::print_vector(v);
+    AOC19::print_vector(v2);
+
+    
+
+    // day11(); // Day 11 can only be tested manually 
 
     //day13();
     //day15();

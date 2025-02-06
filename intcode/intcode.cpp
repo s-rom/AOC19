@@ -119,10 +119,12 @@ void intcode::IntcodeProgram::execute_in(int64_t instruction)
 
 bool intcode::IntcodeProgram::is_waiting_for_input()
 {
-
+    // TODO: This is masking StopCondition::HALTED
     if (static_cast<size_t>(pc) >= program.size()) return true;
 
     auto opcode = get_opcode(program[pc]);
+
+    // TODO: Maybe prompt_user_input should not be used in sync_execute()
     return opcode == Opcode::INPUT && input_queue.size() == 0 && !prompt_user_input;
 }
 
@@ -213,14 +215,7 @@ void intcode::IntcodeProgram::execute_bin_op(int64_t instruction, binary_op oper
 {
     auto op1 = read_operand(instruction, 1);
     auto op2 = read_operand(instruction, 2);
-    
-    
-    // auto op3 = program[pc + 3];
-    // this->write_memory(op3, operation(op1, op2));
-    
     write_operand(instruction, operation(op1, op2), 3);
-
-
     pc += 4;
 }
 
@@ -235,20 +230,16 @@ int64_t intcode::IntcodeProgram::read_operand(int64_t instruction, int64_t opIdx
     {
         case Mode::IMMEDIATE:
         return read_memory(op_addr);
-        // return program[pc + opIdx];
         break;
 
         case Mode::POSITION:
         op_value = read_memory(op_addr);
         return read_memory(op_value);
-        // return program[program[pc + opIdx]];
         break;
         
         case Mode::RELATIVE:
         op_value = read_memory(op_addr);
         return read_memory(op_value + relative_base);
-
-        // ???
         break;
     }
 
@@ -312,7 +303,6 @@ std::string intcode::IntcodeProgram::dissassemble()
             ss << dissassemble_operand(dpc, instruction, 3);
             ss << " ";
             
-
             dpc += 4;
             break;
 
@@ -322,6 +312,7 @@ std::string intcode::IntcodeProgram::dissassemble()
             ss << " ";
             ss << dissassemble_operand(dpc, instruction, 2);
             ss << " ";
+            
             dpc += 3;
             break;
 
@@ -345,6 +336,7 @@ std::string intcode::IntcodeProgram::dissassemble()
     return ss.str();
 }
 
+
 std::string intcode::IntcodeProgram::dissassemble_operand(int64_t dpc, int64_t instruction, int64_t opIdx)
 {
     std::stringstream ss;
@@ -359,6 +351,7 @@ std::string intcode::IntcodeProgram::dissassemble_operand(int64_t dpc, int64_t i
 
 intcode::StopState intcode::IntcodeProgram::sync_execute()
 {
+
     while (!halted())
     {
         auto size_before_next = output.size();
@@ -374,7 +367,6 @@ intcode::StopState intcode::IntcodeProgram::sync_execute()
             return StopState::WAITING_FOR_INPUT;
         }
     }
-
 
     return StopState::HALTED;
 }
