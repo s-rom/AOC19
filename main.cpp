@@ -10,6 +10,8 @@
 #include "util/util.h"
 #include "util/vec.h"
 
+#include "day13/day13.hpp"
+
 void day2()
 {
     using namespace intcode;
@@ -298,38 +300,12 @@ void day11()
 
 }
 
-void day13()
-{
-    
-}
+
 
 
 int main(int argc, char** argv)
 {
-    // day2();
-    // day5();
-    // day7();
-    // day9();
-
-    std::vector<int> v{1, 2, 3};
-
-    std::vector<int> v2 = std::move(v);
-
-
-    AOC19::print_vector(v);
-    AOC19::print_vector(v2);
-
-    
-
-    // day11(); // Day 11 can only be tested manually 
-
-    //day13();
-    //day15();
-    //day17();
-    //day19();
-    //day21();
-    //day23();
-    //day25();
+    day13();
     return 0;
 }
 
