@@ -305,7 +305,8 @@ void day11()
 
 int main(int argc, char** argv)
 {
-    day13();
+    //day13_part1();
+    day13_raylib();
     return 0;
 }
 

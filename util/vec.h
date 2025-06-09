@@ -1,4 +1,6 @@
 #pragma once
+#ifndef UTIL_H
+#define UTIL_H
 
 #include <string>
 #include <sstream>
@@ -106,3 +108,5 @@ namespace AOC19
     };
 
 }
+
+#endif
