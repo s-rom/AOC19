@@ -171,7 +171,7 @@ namespace intcode
             ==> Does not reset program counter
 
         */
-        StopState sync_execute();
+        StopState sync_execute(bool wait_on_output = false);
 
         /*
             Execute until HALT

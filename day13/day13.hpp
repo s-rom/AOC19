@@ -9,6 +9,7 @@
 #include <raylib.h>
 
 
+
 enum class Tile
 {
 	EMPTY = 0,
@@ -18,13 +19,28 @@ enum class Tile
 	BALL = 4
 };
 
+using TileGrid = std::vector<std::vector<Tile>>;
+struct GameState
+{
+	int score;
+	AOC19::GridVector<int> ball_position;
+	AOC19::GridVector<int> paddle_position;
+	TileGrid grid_state;
 
-void update_game_state(std::vector<std::vector<Tile>> & game_state, std::vector<int64_t> program_output, AOC19::GridVector<int>& ball_position);
+	GameState(int rows, int cols)
+		: score(0),
+		ball_position{ 0, 0 },
+		paddle_position{ 0, 0 },
+		grid_state(rows, std::vector<Tile>(cols, Tile::EMPTY)) 
+	{
+	}
+};
 
-void draw_game_state(std::vector<std::vector<Tile>> & game_state);
+
+void update_game_state(GameState& state, std::vector<int64_t> program_output);
+void draw_game_state(TileGrid & grid_state);
 void day13_raylib();
 void day13_part1();
-void day13();
 
 #endif
 

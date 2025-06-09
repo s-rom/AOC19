@@ -349,7 +349,7 @@ std::string intcode::IntcodeProgram::dissassemble_operand(int64_t dpc, int64_t i
     return ss.str();
 }
 
-intcode::StopState intcode::IntcodeProgram::sync_execute()
+intcode::StopState intcode::IntcodeProgram::sync_execute(bool wait_on_output)
 {
 
     while (!halted())
@@ -358,7 +358,7 @@ intcode::StopState intcode::IntcodeProgram::sync_execute()
         execute_next();
 
         // output executed
-        if (size_before_next < output.size())
+        if (size_before_next < output.size() && wait_on_output)
         {
             return StopState::OUTPUT;
         }

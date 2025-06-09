@@ -7,6 +7,11 @@
 namespace AOC19
 {
     template <typename T>
+    int sign(T val) {
+        return (T(0) < val) - (val < T(0));
+    }
+
+    template <typename T>
     inline std::string vector_to_str(const std::vector<T>& v, char sep=',')
     {   
         std::stringstream ss;
