@@ -10,7 +10,9 @@
 #include "util/util.h"
 #include "util/vec.h"
 
+#include <unordered_map>
 #include "day13/day13.hpp"
+#include "day15/day15.hpp"
 
 void day2()
 {
@@ -306,7 +308,17 @@ void day11()
 int main(int argc, char** argv)
 {
     //day13_part1();
-    day13_raylib();
+    //day13_raylib();
+    //day15_part1();
+    
+    using namespace AOC19;
+    std::unordered_map<AOC19::GridVector<int>, int, AOC19::GridVectorHash<int>> map;
+
+    map[GridVector(0, 0)] = 9;
+    map[{1, 2}] = 10;
+    
+    std::cout << map[{0, 0}];
+
     return 0;
 }
 

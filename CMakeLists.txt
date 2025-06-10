@@ -21,9 +21,8 @@ file(GLOB_RECURSE HEADERS
     util/*.h
 )
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/day1
-    ${CMAKE_SOURCE_DIR}/day13
+include_directories(GLOB_RECURSE DIRECTORIES
+    ${CMAKE_SOURCE_DIR}/day*
     ${CMAKE_SOURCE_DIR}/intcode
     ${CMAKE_SOURCE_DIR}/util
 )
