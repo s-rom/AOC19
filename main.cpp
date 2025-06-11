@@ -310,14 +310,8 @@ int main(int argc, char** argv)
     //day13_part1();
     //day13_raylib();
     //day15_part1();
-    
-    using namespace AOC19;
-    std::unordered_map<AOC19::GridVector<int>, int, AOC19::GridVectorHash<int>> map;
-
-    map[GridVector(0, 0)] = 9;
-    map[{1, 2}] = 10;
-    
-    std::cout << map[{0, 0}];
+    day15_interactive();
+   
 
     return 0;
 }

@@ -36,6 +36,10 @@ namespace AOC19
             return GridVector<T>(column + other.column, row + other.row);
         }
 
+        constexpr GridVector<T> operator-(const GridVector<T>& other) const {
+            return GridVector<T>(column - other.column, row - other.row);
+        }
+
         constexpr GridVector<T>& operator+=(const GridVector<T>& other) 
         {
             this->column += other.column;
