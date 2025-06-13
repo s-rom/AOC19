@@ -325,8 +325,8 @@ int main(int argc, char** argv)
 {
     //day13_part1();
     //day13_raylib();
-//    day15_part1();
-  day15_interactive();
+    day15_part1();
+  //day15_interactive();
    
 
     return 0;

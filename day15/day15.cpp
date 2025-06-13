@@ -43,16 +43,22 @@ void explore(ExplorationData& data, intcode::IntcodeProgram& program)
         case StatusCode::FOUND:
             data.distance[next_pos] = 2;
             std::cout << "Found goal at " << next_pos.to_string() << std::endl;
+            std::cout << "Found in " << data.inputs.size() + 1 << " inputs" << std::endl;
             break;
+            
         }
     }
 
     // all inputs failed: backtrack last movement
     if (!data.inputs.empty())
         data.inputs.pop_back();
-    data.move(reversed(last_input));
-    program.input_queue.push(static_cast<int>(reversed(last_input)));
-    program.sync_execute();
+
+    if (last_input != MoveCmd::NONE)
+    {
+        data.move(reversed(last_input));
+        program.input_queue.push(static_cast<int>(reversed(last_input)));
+        program.sync_execute();
+    }
 }
 
 
