@@ -39,7 +39,7 @@ void explore(ExplorationData& data, intcode::IntcodeProgram& program)
             data.distance[next_pos] = 1;
             data.move(command);
             explore(data, program);
-            break;
+        break;
         case StatusCode::FOUND:
             data.distance[next_pos] = 2;
             std::cout << "Found goal at " << next_pos.to_string() << std::endl;
@@ -48,9 +48,11 @@ void explore(ExplorationData& data, intcode::IntcodeProgram& program)
     }
 
     // all inputs failed: backtrack last movement
-    auto last_command = data.inputs.back();
-    data.inputs.pop_back();
-    data.move(reversed(last_command));
+    if (!data.inputs.empty())
+        data.inputs.pop_back();
+    data.move(reversed(last_input));
+    program.input_queue.push(static_cast<int>(reversed(last_input)));
+    program.sync_execute();
 }
 
 
@@ -98,13 +100,13 @@ void day15_interactive()
     data.distance[{0, 0}] = 0;
     data.current_position = { 25, 25 };
 
-    //explore(data, robot);
+    explore(data, robot);
 
     const int rows = 50, cols = 50;
     std::vector<std::vector<int>> map(rows, std::vector<int>(cols));
-    //update_map(map, data);
+    update_map(map, data);
 
-    const int TILE_WIDTH = 20;
+    const int TILE_WIDTH = 14;
     const int WIDTH = rows * TILE_WIDTH;
     const int HEIGHT = cols * TILE_WIDTH;
 
